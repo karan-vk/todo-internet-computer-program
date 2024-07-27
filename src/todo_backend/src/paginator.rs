@@ -40,3 +40,50 @@ impl Paginator {
         (self.page() - 1) as usize * self.limit()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_default_page() {
+        let paginator = Paginator::default();
+        assert_eq!(paginator.page(), 1);
+    }
+
+    #[test]
+    fn test_custom_page() {
+        let paginator = Paginator { page: 3, limit: None };
+        assert_eq!(paginator.page(), 3);
+    }
+
+    #[test]
+    fn test_default_limit() {
+        let paginator = Paginator::default();
+        assert_eq!(paginator.limit(), DEFAULT_PAGE_SIZE as usize);
+    }
+
+    #[test]
+    fn test_custom_limit_within_max() {
+        let paginator = Paginator { page: 1, limit: Some(10) };
+        assert_eq!(paginator.limit(), 10);
+    }
+
+    #[test]
+    fn test_custom_limit_exceeding_max() {
+        let paginator = Paginator { page: 1, limit: Some(150) };
+        assert_eq!(paginator.limit(), MAX_PAGE_SIZE as usize);
+    }
+
+    #[test]
+    fn test_skip_calculation() {
+        let paginator = Paginator { page: 3, limit: Some(10) };
+        assert_eq!(paginator.skip(), 20);
+    }
+
+    #[test]
+    fn test_skip_calculation_with_default_limit() {
+        let paginator = Paginator { page: 3, limit: None };
+        assert_eq!(paginator.skip(), 10);
+    }
+}

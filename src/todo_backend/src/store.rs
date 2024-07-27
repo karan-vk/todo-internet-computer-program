@@ -215,3 +215,116 @@ impl<'a, M: Memory> TodoStoreWrapper<'a, M> {
         }
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+   
+    use std::cell::RefCell;
+    use std::collections::HashMap;
+
+    struct Store {
+        store: RefCell<HashMap<(Principal, TodoId), Todo>>,
+    }
+
+    impl Store {
+        fn new() -> Self {
+            Self {
+                store: RefCell::new(HashMap::new()),
+            }
+        }
+
+        fn get_todo(
+            &self,
+            principal: Principal,
+            id: TodoId,
+        ) -> Option<Todo> {
+            self.store.borrow().get(&(principal, id)).cloned()
+        }
+
+        fn add_tag_to_todo(
+            &self,
+            principal: Principal,
+            id: TodoId,
+            tag: String,
+        ) -> Result<(), Error> {
+            match self.get_todo(principal, id) {
+                Some(mut todo) => {
+                    todo.add_tag(tag);
+                    self.store.borrow_mut().insert((principal, id), todo);
+                    Ok(())
+                }
+                None => Err(Error::NotFound),
+            }
+        }
+
+        fn remove_tag_from_todo(
+            &self,
+            principal: Principal,
+            id: TodoId,
+            tag: String,
+        ) -> Result<(), Error> {
+            match self.get_todo(principal, id) {
+                Some(mut todo) => {
+                    todo.remove_tag(&tag);
+                    self.store.borrow_mut().insert((principal, id), todo);
+                    Ok(())
+                }
+                None => Err(Error::NotFound),
+            }
+        }
+    }
+
+    #[derive(Debug, PartialEq)]
+    enum Error {
+        NotFound,
+    }
+
+    #[test]
+    fn test_add_tag_to_todo() {
+        let store = Store::new();
+        let principal = Principal::anonymous();
+        let todo = Todo::new(1, "Test Todo".to_string(), Priority::Medium);
+        store.store.borrow_mut().insert((principal, 1), todo);
+
+        assert!(store.add_tag_to_todo(principal, 1, "urgent".to_string()).is_ok());
+        let updated_todo = store.get_todo(principal, 1).unwrap();
+        assert_eq!(updated_todo.tags, vec!["urgent"]);
+    }
+
+    #[test]
+    fn test_add_tag_to_nonexistent_todo() {
+        let store = Store::new();
+        let principal = Principal::anonymous();
+
+        assert_eq!(
+            store.add_tag_to_todo(principal, 1, "urgent".to_string()),
+            Err(Error::NotFound)
+        );
+    }
+
+    #[test]
+    fn test_remove_tag_from_todo() {
+        let store = Store::new();
+        let principal = Principal::anonymous();
+        let mut todo = Todo::new(1, "Test Todo".to_string(), Priority::Medium);
+        todo.add_tag("urgent".to_string());
+        store.store.borrow_mut().insert((principal, 1), todo);
+
+        assert!(store.remove_tag_from_todo(principal, 1, "urgent".to_string()).is_ok());
+        let updated_todo = store.get_todo(principal, 1).unwrap();
+        assert!(updated_todo.tags.is_empty());
+    }
+
+    #[test]
+    fn test_remove_tag_from_nonexistent_todo() {
+        let store = Store::new();
+        let principal = Principal::anonymous();
+
+        assert_eq!(
+            store.remove_tag_from_todo(principal, 1, "urgent".to_string()),
+            Err(Error::NotFound)
+        );
+    }
+}

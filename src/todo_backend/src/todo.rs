@@ -8,7 +8,7 @@ use ic_stable_structures::{storable::Bound, Storable};
 pub(crate) type TodoId = u32;
 
 /// Represents the priority level of a Todo item.
-#[derive(CandidType, Deserialize, Clone, Copy)]
+#[derive(CandidType, Deserialize, Clone, Copy, Debug, PartialEq)]
 pub(crate) enum Priority {
     Low,
     Medium,
@@ -22,7 +22,7 @@ impl Default for Priority {
 }
 
 /// Represents a Todo item with an ID, text description, and completion status.
-#[derive(CandidType, Deserialize, Clone)]
+#[derive(CandidType, Deserialize, Clone, Debug, PartialEq)] // Add PartialEq trait
 pub(crate) struct Todo {
     /// Unique identifier for the Todo item.
     pub(crate) id: TodoId,
@@ -34,7 +34,6 @@ pub(crate) struct Todo {
     pub(crate) priority: Priority,
     /// Tags associated with the Todo item.
     pub(crate) tags: Vec<String>,
-
 }
 
 impl Todo {
@@ -105,5 +104,45 @@ impl Storable for Todo {
     /// A `Todo` instance.
     fn from_bytes(bytes: Cow<[u8]>) -> Self {
         Decode!(bytes.as_ref(), Self).unwrap()
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new_todo() {
+        let todo = Todo::new(1, "Test Todo".to_string(), Priority::High);
+        assert_eq!(todo.id, 1);
+        assert_eq!(todo.description, "Test Todo");
+        assert_eq!(todo.is_completed, false);
+        assert_eq!(todo.priority, Priority::High);
+        assert!(todo.tags.is_empty());
+    }
+
+    #[test]
+    fn test_add_tag() {
+        let mut todo = Todo::new(1, "Test Todo".to_string(), Priority::Medium);
+        todo.add_tag("urgent".to_string());
+        assert_eq!(todo.tags, vec!["urgent"]);
+    }
+
+    #[test]
+    fn test_remove_tag() {
+        let mut todo = Todo::new(1, "Test Todo".to_string(), Priority::Medium);
+        todo.add_tag("urgent".to_string());
+        todo.add_tag("home".to_string());
+        todo.remove_tag("urgent");
+        assert_eq!(todo.tags, vec!["home"]);
+    }
+
+    #[test]
+    fn test_to_bytes_and_from_bytes() {
+        let todo = Todo::new(1, "Test Todo".to_string(), Priority::Low);
+        let bytes = todo.to_bytes();
+        let decoded_todo = Todo::from_bytes(bytes);
+        assert_eq!(todo, decoded_todo);
     }
 }

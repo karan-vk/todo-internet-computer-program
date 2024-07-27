@@ -20,6 +20,21 @@ cd todo/
 dfx help
 dfx canister --help
 ```
+## About the App
+
+This project is a simple Todo application built on the Internet Computer using Rust. It allows users to create, manage, and prioritize their Todo items. The backend is implemented using the `ic-cdk` and `ic-stable-structures` crates, ensuring data persistence and stability.
+
+### Key Features
+
+- **Add Todo Items**: Users can add new Todo items with a description and priority.
+- **Manage Todos**: Users can update and delete their Todo items.
+- **Prioritize Tasks**: Users can set the priority of each Todo item to manage their tasks effectively.
+
+### Code Structure
+
+- **Backend**: The backend logic is implemented in Rust and can be found in the `src/todo_backend` directory. Key files include:
+  - [`src/todo_backend/src/lib.rs`](src/todo_backend/src/lib.rs): Contains the main logic for adding Todo items.
+  - [`src/todo_backend/src/store.rs`](src/todo_backend/src/store.rs): Manages the storage of Todo items.
 
 ## Running the project locally
 

@@ -1,0 +1,16 @@
+[package]
+name = "todo_backend"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+candid = "0.10.9"
+ic-cdk = "0.15.0"
+ic-stable-structures = "0.6.5"
+serde = "1.0.204"
+thiserror = "1.0.63"

@@ -1,0 +1,23 @@
+type Error = variant { InvalidInput : text; NotFound };
+type Paginator = record { page : nat32; limit : opt nat32 };
+type Priority = variant { Low; High; Medium };
+type Result = variant { Ok; Err : Error };
+type Result_1 = variant { Ok : Todo; Err : Error };
+type Todo = record {
+  id : nat32;
+  tags : vec text;
+  description : text;
+  is_completed : bool;
+  priority : Priority;
+};
+service : {
+  add_tag_to_todo_item : (nat32, text) -> (Result);
+  add_todo_item : (text, opt Priority) -> (nat32);
+  delete_todo_item : (nat32) -> ();
+  get_todo_item : (nat32) -> (Result_1) query;
+  list_todo_items : (opt Paginator) -> (vec Todo) query;
+  modify_todo_priority : (nat32, Priority) -> (Result);
+  remove_tag_from_todo_item : (nat32, text) -> (Result);
+  toggle_todo_complete : (nat32) -> (Result);
+  update_todo_item : (nat32, text) -> (Result);
+}
